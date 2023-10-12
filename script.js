@@ -1,37 +1,52 @@
-document.getElementById("calcular-button").addEventListener("click", function() {
-    // Limpiar resultados previos
-    var resultadoDiv = document.getElementById("resultado");
-    resultadoDiv.innerHTML = "";
+// Crear un objeto para almacenar los datos de compra
+var compra = {
+    cantidadProductos: 0,
+    distanciaEnvioKm: 0,
+    empaquesPlasticos: 0,
+    empaquesCarton: 0
+};
 
-    // Obtener los valores ingresados por el usuario
-    var cantidadProductos = parseFloat(document.getElementById("cantidad-productos").value);
-    var distanciaEnvioKm = parseFloat(document.getElementById("distancia-envio").value);
-    var empaquesPlasticos = parseFloat(document.getElementById("empaques-plasticos").value);
-    var empaquesCarton = parseFloat(document.getElementById("empaques-carton").value);
+// Validar entrada de usuario
+if (isNaN(compra.cantidadProductos) || isNaN(compra.distanciaEnvioKm) || isNaN(compra.empaquesPlasticos) || isNaN(compra.empaquesCarton)) {
+    console.log("Por favor, ingrese valores numéricos en todos los campos.");
+} else {
+    // Crear un array de objetos para almacenar los productos específicos
+    var productosEspecificos = [];
 
-    // Validar entrada de usuario
-    if (isNaN(cantidadProductos) || isNaN(distanciaEnvioKm) || isNaN(empaquesPlasticos) || isNaN(empaquesCarton)) {
-        resultadoDiv.innerHTML = "Por favor, ingrese valores numéricos en todos los campos.";
-        return; // Salir de la función si hay errores de entrada
+    for (var i = 0; i < 3; i++) {
+        var producto = {
+            nombre: "",
+            cantidad: 0,
+            impacto: 0
+        };
+
+        producto.nombre = prompt("Ingrese el nombre del producto " + (i + 1) + ":");
+        producto.cantidad = parseFloat(prompt("Ingrese la cantidad de " + producto.nombre + ":"));
+        producto.impacto = parseFloat(prompt("Ingrese el impacto ambiental de " + producto.nombre + ":"));
+
+        productosEspecificos.push(producto);
     }
 
     // Calcular el impacto ambiental básico (mejorado)
-    var impactoBasico = calcularImpactoBasico(cantidadProductos, distanciaEnvioKm, empaquesPlasticos, empaquesCarton);
-
-    // Mostrar el resultado en la página
-    resultadoDiv.innerHTML += "El impacto ambiental de su compra en línea es de " + impactoBasico.toFixed(2) + " unidades.";
+    var impactoBasico = calcularImpactoBasico(compra);
 
     // Evaluar el impacto y dar recomendaciones
     var recomendacion = obtenerRecomendacion(impactoBasico);
-    resultadoDiv.innerHTML += "<br>" + recomendacion;
 
     // Calcular el impacto de productos específicos
-    calcularImpactoProductosEspecificos(resultadoDiv);
-});
+    var impactoProductoTotal = calcularImpactoProductosEspecificos(productosEspecificos);
+
+    console.log("El impacto ambiental de su compra en línea es de " + impactoBasico.toFixed(2) + " unidades.");
+    console.log(recomendacion);
+
+    if (impactoProductoTotal > 0) {
+        console.log("El impacto ambiental total de los productos específicos es de " + impactoProductoTotal.toFixed(2) + " unidades.");
+    }
+}
 
 // Función para calcular el impacto ambiental básico
-function calcularImpactoBasico(cantidadProductos, distanciaEnvioKm, empaquesPlasticos, empaquesCarton) {
-    var impactoTotal = cantidadProductos * 1 + distanciaEnvioKm * 0.1 + empaquesPlasticos * 2 + empaquesCarton * 1.5;
+function calcularImpactoBasico(compra) {
+    var impactoTotal = compra.cantidadProductos * 1 + compra.distanciaEnvioKm * 0.1 + compra.empaquesPlasticos * 2 + compra.empaquesCarton * 1.5;
     return impactoTotal;
 }
 
@@ -44,23 +59,14 @@ function obtenerRecomendacion(impacto) {
     } else {
         return "Su compra en línea tiene un alto impacto ambiental. Le recomendamos buscar alternativas más sostenibles.";
     }
+
 }
 
 // Función para calcular el impacto de productos específicos
-function calcularImpactoProductosEspecificos(resultadoDiv) {
-    var productos = ["Producto 1", "Producto 2", "Producto 3"]; // Ejemplo de nombres de productos
-    var impactoProductoTotal = 0;
+function calcularImpactoProductosEspecificos(productosEspecificos) {
+    var impactoProductoTotal = productosEspecificos.reduce(function (total, producto) {
+        return total + (producto.cantidad * producto.impacto);
+    }, 0);
 
-    for (var i = 0; i < productos.length; i++) {
-        var cantidadProducto = parseFloat(prompt("Ingrese la cantidad de " + productos[i] + ":"));
-        var impactoProducto = parseFloat(prompt("Ingrese el impacto ambiental de " + productos[i] + ":"));
-        
-        if (!isNaN(cantidadProducto) && !isNaN(impactoProducto)) {
-            impactoProductoTotal += cantidadProducto * impactoProducto;
-        }
-    }
-
-    if (impactoProductoTotal > 0) {
-        resultadoDiv.innerHTML += "<br>El impacto ambiental total de los productos específicos es de " + impactoProductoTotal.toFixed(2) + " unidades.";
-    }
+    return impactoProductoTotal;
 }
